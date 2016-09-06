@@ -1,0 +1,13 @@
+{
+  "github": {
+    "username": "seferov",
+    "password": "Passw0rd",
+    "organization": "some-organization",
+    "repositoy": "website",
+    "base_branch": "master"
+  },
+  "directory": "/var/www/test",
+  "hooks": {
+    "post-update": "/Users/seferov/test/post-update.sh"
+  }
+}
