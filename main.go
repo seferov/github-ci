@@ -146,9 +146,9 @@ func cloneBranch(branch string) {
 	}
 }
 
-func runHook(executable string, dir string) {
-	fmt.Printf("/bin/sh " + executable + " " + configuration.Directory + dir + "\n")
-	cmd := exec.Command("/bin/sh", executable, configuration.Directory+dir)
+func runHook(executable string, folder string) {
+	name := strings.Replace(folder, "-", "", -1)
+	cmd := exec.Command("/bin/sh", executable, configuration.Directory+folder, name)
 	err := cmd.Run()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
