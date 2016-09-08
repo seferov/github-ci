@@ -137,22 +137,30 @@ func branchToFolderName(branch string) string {
 }
 
 func cloneBranch(branch string) {
-	fmt.Printf("Cloning " + branch + "...\n")
+	fmt.Println("Cloning " + branch)
 
-	cmd := exec.Command("git", "clone", "-b", branch, getCloneURL(), configuration.Directory+branchToFolderName(branch))
-	err := cmd.Run()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
+	cmdArgs := []string{"clone", "-b", branch, getCloneURL(), configuration.Directory + branchToFolderName(branch)}
+	runCmd("git", cmdArgs)
 }
 
 func runHook(executable string, folder string) {
 	name := strings.Replace(folder, "-", "", -1)
-	cmd := exec.Command("/bin/sh", executable, configuration.Directory+folder, name)
-	err := cmd.Run()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+
+	cmdArgs := []string{executable, configuration.Directory + folder, name}
+	runCmd("/bin/sh", cmdArgs)
+}
+
+func runCmd(cmdName string, cmdArgs []string) {
+	var (
+		cmdOut []byte
+		err    error
+	)
+
+	if cmdOut, err = exec.Command(cmdName, cmdArgs...).Output(); err != nil {
+		fmt.Fprintln(os.Stderr, "There was an error running command: ", err)
 	}
+
+	fmt.Println(string(cmdOut))
 }
 
 func getCloneURL() string {
