@@ -8,6 +8,8 @@
   },
   "directory": "/var/www/test",
   "hooks": {
-    "post-update": "/Users/seferov/test/post-update.sh"
+    "post-clone": "/Users/seferov/test/post-clone.sh",
+    "post-update": "/Users/seferov/test/post-update.sh",
+    "post-close": "/Users/seferov/test/post-close.sh",
   }
 }

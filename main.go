@@ -19,7 +19,7 @@ var (
 	configuration Configuration
 )
 
-// Configuration jj
+// Configuration example: conf.json
 type Configuration struct {
 	Directory string `json:"directory"`
 	Github    struct {
@@ -32,6 +32,7 @@ type Configuration struct {
 	Hooks struct {
 		PostClone  string `json:"post-clone"`
 		PostUpdate string `json:"post-update"`
+		PostClose  string `json:"post-close"`
 	} `json:"hooks"`
 }
 
@@ -70,6 +71,8 @@ func main() {
 			// delete
 			fmt.Println("Deleting " + folder)
 			os.RemoveAll(configuration.Directory + folder)
+
+			runHook(configuration.Hooks.PostClose, folder)
 		}
 	}
 
