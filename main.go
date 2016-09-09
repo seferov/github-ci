@@ -65,33 +65,25 @@ func main() {
 			}
 		}
 
-		// Protected files & folders
-		if in(folder, []string{"post-clone.sh"}) {
-			break
-		}
-
 		// if folder not found in open branches, delete it
 		if !found {
 			// delete
-			fmt.Printf("Deleting " + folder + "...\n")
+			fmt.Println("Deleting " + folder)
 			os.RemoveAll(configuration.Directory + folder)
 		}
 	}
 
 	var branchFolder string
 	for _, branch := range openBranches {
+		fmt.Println(branch)
 		branchFolder = branchToFolderName(branch)
 		if !in(branchFolder, clonedBranchFolders) {
 			cloneBranch(branch)
 
-			if configuration.Hooks.PostClone != "" {
-				runHook(configuration.Hooks.PostClone, branchFolder)
-			}
+			runHook(configuration.Hooks.PostClone, branchFolder)
 		}
 
-		if configuration.Hooks.PostUpdate != "" {
-			runHook(configuration.Hooks.PostUpdate, branchFolder)
-		}
+		runHook(configuration.Hooks.PostUpdate, branchFolder)
 	}
 }
 
@@ -144,6 +136,10 @@ func cloneBranch(branch string) {
 }
 
 func runHook(executable string, folder string) {
+	if executable == "" {
+		return
+	}
+
 	name := strings.Replace(folder, "-", "", -1)
 
 	cmdArgs := []string{executable, configuration.Directory + folder, name}
@@ -164,7 +160,12 @@ func runCmd(cmdName string, cmdArgs []string) {
 }
 
 func getCloneURL() string {
-	return "https://" + configuration.Github.Username + ":" + configuration.Github.Password + "@github.com/" + configuration.Github.Organization + "/" + configuration.Github.Repo + ".git"
+	return fmt.Sprintf("https://%s:%s@github.com/%s/%s.git",
+		configuration.Github.Username,
+		configuration.Github.Password,
+		configuration.Github.Organization,
+		configuration.Github.Repo,
+	)
 }
 
 func in(a string, list []string) bool {
