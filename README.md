@@ -1,1 +1,1 @@
-# dugun.com develop CI
+# Github CI
