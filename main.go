@@ -17,6 +17,7 @@ import (
 var (
 	confFile      = kingpin.Arg("confFile", "Config file path").Required().File()
 	configuration Configuration
+	client        github.Client
 )
 
 // Configuration example: conf.json
@@ -36,8 +37,8 @@ type Configuration struct {
 	} `json:"hooks"`
 }
 
-// Gets configuration file
 func init() {
+	// Gets configuration file
 	kingpin.Parse()
 
 	decoder := json.NewDecoder(*confFile)
@@ -45,10 +46,18 @@ func init() {
 	if err != nil {
 		fmt.Println("error:", err)
 	}
+
+	// Init github client
+	tp := github.BasicAuthTransport{
+		Username: configuration.Github.Username,
+		Password: configuration.Github.Password,
+	}
+
+	client = *github.NewClient(tp.Client())
 }
 
 func main() {
-	openBranches := getOpenBranches()
+	openPulls := getOpenPulls()
 
 	files, _ := ioutil.ReadDir(configuration.Directory)
 	var clonedBranchFolders []string
@@ -59,8 +68,8 @@ func main() {
 	// Delete created and closed branch folders
 	for _, folder := range clonedBranchFolders {
 		found := false
-		for _, branch := range openBranches {
-			if branchToFolderName(branch) == folder {
+		for _, pull := range openPulls {
+			if branchToFolderName(pullToBranchName(pull)) == folder {
 				found = true
 				break
 			}
@@ -77,7 +86,9 @@ func main() {
 	}
 
 	var branchFolder string
-	for _, branch := range openBranches {
+	var branch string
+	for _, pull := range openPulls {
+		branch = pullToBranchName(pull)
 		fmt.Println(branch)
 		branchFolder = branchToFolderName(branch)
 		if !in(branchFolder, clonedBranchFolders) {
@@ -90,14 +101,7 @@ func main() {
 	}
 }
 
-func getOpenBranches() []string {
-	tp := github.BasicAuthTransport{
-		Username: configuration.Github.Username,
-		Password: configuration.Github.Password,
-	}
-
-	client := github.NewClient(tp.Client())
-
+func getOpenPulls() []*github.PullRequest {
 	pullRequestListOptions := &github.PullRequestListOptions{
 		Base:  configuration.Github.BaseBranch,
 		State: "open",
@@ -108,12 +112,7 @@ func getOpenBranches() []string {
 		panic(err)
 	}
 
-	var openBranches []string
-	for _, pull := range pulls {
-		openBranches = append(openBranches, pullToBranchName(pull))
-	}
-
-	return openBranches
+	return pulls
 }
 
 // Splits organization name from branch using github.PullRequest
